@@ -1,0 +1,15 @@
+GDD_node
+ GDD_C&T
+  GDD_AUI
+   GDD_CUI
+    GDD_FUI
+GDD_relation
+ GDD_inheritance
+  GDD_restriction
+  GDD_specialization
+   GDD_extension
+   GDD_concretization
+    GDD_implementation
+ GDD_composition
+  GDD_encapsulation
+  GDD_use

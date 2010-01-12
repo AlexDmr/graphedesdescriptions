@@ -1,0 +1,513 @@
+# Grammar                                                                       #
+# QUERY       : '?'List_var_nodes ':' root ':' EXPR                             #
+# EXPR        : NODE | NODE ARROW "NOREL" | NODE ARROW RELATION                 #
+# NODE        : "Node" '(' COND_NODE ')'                                        #
+#             | '$'var_node                                                     #
+# RELATION    : REL_OR ARROW EXPR                                               #
+# REL_OR      : REL_SUCC | REL_SUCC '|' REL_OR                                  #
+# REL_SUCC    : SIMPLE_REL | SIMPLE_REL OP_SIMPLE_REL_SUCC REL_SUCC             #
+# OP_SIMPLE_REL_SUCC : '>' | '<'                                                #
+# SIMPLE_REL  : "Rel" '(' COND_REL ')' [*]                                      #
+#             | '(' RELATION ')'                                                #
+# C'est SGQ, un DSL issue d'un GPL qui parcours le GDD. De sorte qu'on peut dire que c'est un ATL... #
+#___________________________________________________________________________________________________________________________________________
+#___________________________________________________________________________________________________________________________________________
+#____________________________________________________ DSL for querying the GDD _____________________________________________________________
+#___________________________________________________________________________________________________________________________________________
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY constructor {} {
+ set this(dec) ""
+ set this(lexic,left_arrow)  {<-}
+ set this(lexic,right_arrow) {->}
+ set this(lexic,succ_left)   {<}
+ set this(lexic,succ_right)  {<}
+ set this(lexic,letters)     {[a-zA-Z0-9_"]}
+ set this(lexic,spaces)      {[ \n\t]}
+ set this(lexic,op_cmp)      {[!~=]}
+ set this(ERROR)             {}
+
+ set this(L_vars) {}
+ set this(current_var_name) {}
+ set this(current_var_vals) {}
+
+ set this(rel_bidon)  "${objName}_rel_bidon" ; GDD_Relationship $this(rel_bidon) ; $this(rel_bidon) set_type GDD_inheritance
+ set this(node_bidon) "${objName}_node_bidon"; GDD_Node         $this(node_bidon); $this(rel_bidon) set_type GDD_CUI
+ 
+ set this(propagate_node) 0
+}
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY dispose {} {
+ $this(rel_bidon)  dispose
+ $this(node_bidon) dispose
+ this inherited
+}
+#___________________________________________________________________________________________________________________________________________
+Generate_accessors DSL_GDD_QUERY ERROR
+#___________________________________________________________________________________________________________________________________________
+#___________________________________________________________________________________________________________________________________________
+# if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type~=GDD_inheritance)<-$n()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type~=GDD_inheritance)*<-$n()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type~=GDD_inheritance)<REL(type~=GDD_inheritance)<-$n()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type~=GDD_inheritance)*<REL(type~=GDD_inheritance)<-$n()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       ## if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type~=GDD_inheritance)|REL(type~=GDD_inheritance)*<REL(type~=GDD_inheritance)<-$n()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type~=GDD_inheritance)*<-$n()<-NOREL}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type~=GDD_inheritance)*<-$n()<-REL()<-NODE()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n : Choice : NODE()<-REL(type==GDD_implementation)|REL(type~=GDD_inheritance)*<REL(type==GDD_implementation)<-$n()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n,s : Interleaving : NODE()<-REL(type==GDD_concretization)|REL(type~=GDD_inheritance&&type!~=GDD_concretization)*<REL(type==GDD_concretization)<-$n(type==GDD_AUI)<-REL(type~=GDD_inheritance)*<-$s()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+# if {[dsl_q QUERY {?n,s : Interleaving : NODE()<-REL(type~=GDD_inheritance&&type!~=GDD_concretization)*<REL(type==GDD_concretization)<-$n(type==GDD_AUI)<-REL(type~=GDD_inheritance)*<-$s()}]} {puts "Result : [dsl_q get_Result]"} else {puts "ERROR : [dsl_q get_ERROR]"}       #
+#___________________________________________________________________________________________________________________________________________
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY QUERY {str} {
+ set this(ERROR)  {}
+ set this(L_vars) {}
+ set this(L_var_names) {}
+ set this(current_pos_var_names) -1
+ set this(current_var_name) {}
+ set this(current_var_vals) {}
+
+ if {[regexp "^$this(lexic,spaces)*\?$this(lexic,spaces)*(.*)$this(lexic,spaces)*:$this(lexic,spaces)(.*)$this(lexic,spaces):$this(lexic,spaces)(.*)\$" $str reco str_L_vars root str]} {
+   this L_VAR_NODES str_L_vars
+   this EXPR str $root this(L_vars)
+  }
+# puts "Rest:\n$str"
+ if {[string equal $this(ERROR) {}]} {
+   return 1
+  } else {return 0}
+}
+
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY get_Result {} {
+ return $this(L_vars)
+}
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY L_VAR_NODES {str_name} {
+ upvar $str_name str
+
+ set L [split $str ,]
+ foreach v $L {
+   regexp "^$this(lexic,spaces)*($this(lexic,letters)*)$this(lexic,spaces)*$" $v reco v
+   puts "Ajout de la variable '$v'"
+#   lappend this(L_vars) $v
+  }
+}
+
+#___________________________________________________________________________________________________________________________________________
+# EXPR        : NODE | NODE ARROW "NOREL" | NODE ARROW RELATION                           #
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY EXPR {str_name node L_vars_name} {
+ upvar $str_name str
+ upvar $L_vars_name L_vars
+
+ #puts "EXPR:\n  str  : $str\n  node : $node"
+ set L_var_tmp  {}
+ set node [this NODE str $node L_var_tmp]
+ if {[llength $node]==0} {
+   if {[regexp "^$this(lexic,left_arrow)(.*)$" $str reco str]} {
+     if {[regexp "^$this(lexic,spaces)*NOREL(.*)$" $str reco str]} {
+    } else {this RELATION str $this(rel_bidon)}
+  } else {if {[regexp "^$this(lexic,right_arrow)(.*)$" $str reco str]} {
+            if {[regexp "^$this(lexic,spaces)*NOREL(.*)$" $str reco str]} {
+             } else {this RELATION str $this(rel_bidon)}
+           }
+         }
+   return {}
+  }
+
+ set new_L_nodes {}
+ set str_rel $str
+ if {[regexp "^$this(lexic,left_arrow)(.*)$" $str reco str]} {
+   if {[regexp "^$this(lexic,spaces)*NOREL(.*)$" $str reco str]} {
+     #puts "$node must have no rel such as $node<-REL()"
+     if {[llength [$node get_L_dest_rel]]==0} {set new_L_nodes $node} else {set new_L_nodes {}}
+    } else {set this(cmd_get_nodes) get_L_source_nodes; set this(cmd_get_rels) get_L_dest_rel
+            foreach r [$node get_L_dest_rel] {
+              set str_rel $str
+              Add_list new_L_nodes [this RELATION str_rel $r]
+              set this(cmd_get_nodes) get_L_source_nodes; set this(cmd_get_rels) get_L_dest_rel
+             }
+            # Just to parse correctly...
+            this RELATION str $this(rel_bidon)
+           }
+  } else {if {[regexp "^$this(lexic,right_arrow)(.*)$" $str reco str]} {
+            if {[regexp "^$this(lexic,spaces)*NOREL(.*)$" $str reco str]} {
+              if {[llength [$node get_L_source_rel]]==0} {set new_L_nodes $node} else {set new_L_nodes {}}
+             } else {set this(cmd_get_nodes) get_L_dest_nodes; set this(cmd_get_rels) get_L_source_rel
+                     foreach r [$node get_L_source_rel] {
+                       set str_rel $str
+                       Add_list new_L_nodes [this RELATION str_rel $r]
+                       set this(cmd_get_nodes) get_L_dest_nodes; set this(cmd_get_rels) get_L_source_rel
+                      }
+                     # Just to parse correctly...
+                     this RELATION str $this(rel_bidon)
+                    }
+           } else {set new_L_nodes $node}
+         }
+
+ # Managing variables.
+ if {[string equal $new_L_nodes {}]} {} else {
+   if {[string equal $var {}]} {} else {
+     if {[string equal $this(current_var_name) $var]} {
+       Add_element this(current_var_vals) $node
+       #XXX
+       puts "Update de $var avec $node"
+       this Update_L_vars this(L_vars) $var $node 1
+       puts "  $this(L_vars)"
+       #set this(L_vars) [lreplace $this(L_vars) 1 1 $this(current_var_vals)]
+      } else {set i $this(current_pos_var_names)
+              set i [lsearch $this(L_var_names) $var]
+#              while {$i>=0 && ![string equal [lindex $this(L_var_names) $i] $var]} {
+#                incr i -1
+#               }
+              set this(current_var_name) $var
+              set this(current_var_vals) $node
+              if {$i==-1} { # We have a new variable
+                puts "Ajout de $var avec $node"
+                set this(L_vars) "\{[list $var $node $this(L_vars)]\}"
+                set this(L_var_names) [linsert $this(L_var_names) 0 $var]
+                incr this(current_pos_var_names)
+                puts "  $this(L_vars)"
+               } else {# It is a previous variable, we have to be carefull about insertion in L_vars
+                       puts "Update previous variable $var with $node"
+                       if {$i<$this(current_pos_var_names)} {
+                         set this(current_pos_var_names) $i
+                         set this(L_var_names) [lreplace $this(L_var_names) [expr $i+1] end]
+                         puts "  It is a previous variable ! : \{$this(L_var_names)\}"
+                         if {[this Update_L_vars this(L_vars) $var $node]} {
+                           set this(L_vars) [list $this(L_vars) [list $var $node {}]]
+                          }
+                        } else {puts "  It is the last variable : \{$this(L_var_names)\}"
+                                this Update_L_vars this(L_vars) $var $node 1
+                               }
+                      }
+              puts "  $this(L_vars)"
+             }
+    }
+  }
+
+ return $new_L_nodes
+}
+
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY Update_L_vars {L_name v n {local 0}} {
+ upvar $L_name L
+
+ set L_tmp [lindex $L end]
+   set rep [this Update_var L_tmp $v $n $local]
+ set L [lreplace $L end end $L_tmp]
+ return $rep
+}
+
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY Update_var {L_name v n {local 0}} {
+ upvar $L_name L
+
+ if {[string length $L]==0} {return 1}
+ if {[string equal $v [lindex $L 0]]} {
+   if {$local} {
+     set L_tmp [lindex $L 1]
+     Add_element L_tmp $n
+     set L [lreplace $L 1 1 $L_tmp]
+    }
+   return 1
+  } else {set L_tmp [lindex $L 2]
+          set L_tmp [lindex $L_tmp end]
+          if {[this Update_L_vars L_tmp $v $n $local] && !$local} {
+            set new [lindex $L 2]
+            Add_element new [list $v $n {}]
+           } else {set new [lindex $L 2]}
+          set L [lreplace $L 2 2 $new]
+          return 0
+         }
+}
+
+#___________________________________________________________________________________________________________________________________________
+# NODE        : "Node" '(' COND_NODE ')'                                                                                                   #
+#             | '$'var_node                                                                                                                #
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY NODE {str_name node L_vars_name} {
+ upvar $str_name     str
+ upvar $L_vars_name  L_vars
+
+ if {[regexp "^NODE$this(lexic,spaces)*\\((.*)$" $str reco str]} {
+   set str_cond [Compensate str ( ) 1]
+   if {[string equal $node $this(node_bidon)]} {return {}}
+   if {[this COND_NODE str_cond $node]} {
+     return $node
+    }
+  } else {if {[regexp "^\\\$($this(lexic,letters)*)$this(lexic,spaces)*\\((.*)$" $str reco var str]} {
+            set str_cond [Compensate str ( ) 1]
+            if {[string equal $node $this(node_bidon)]} {return {}}
+            if {[this COND_NODE str_cond $node]} {
+              set L_vars [list $var $node {}]
+              return $node
+             }
+            return {}
+           }
+         }
+
+ append this(ERROR) "\n" "Wanted a node and found:\n$str"
+ return {}
+}
+
+#___________________________________________________________________________________________________________________________________________
+# COND_NODE : COND_NODE_AND '||' COND_NODE | COND_NODE_AND
+method DSL_GDD_QUERY COND_NODE {str_name node} {
+ upvar $str_name str
+
+ if {[this COND_NODE_AND str $node]} {return 1}
+ if {[regexp "^\\|\\|$this(lexic,spaces)*(.*)$" $str reco str]} {
+   return [this COND_NODE str $node]
+  }
+
+ return 0
+}
+#___________________________________________________________________________________________________________________________________________
+# COND_NODE_AND : COND_NODE_NOT '&&' COND_NODE_AND | COND_NODE_NOT
+method DSL_GDD_QUERY COND_NODE_AND {str_name node} {
+ upvar $str_name str
+
+ if {[this COND_NODE_NOT str $node]} {} else {return 0}
+ if {[regexp "^\\&\\&$this(lexic,spaces)*(.*)$" $str reco str]} {
+   return [this COND_NODE_AND str $node]
+  }
+ return 1
+}
+
+#___________________________________________________________________________________________________________________________________________
+# COND_NODE_AND : '!' COND_BASE | COND_BASE
+method DSL_GDD_QUERY COND_NODE_NOT {str_name node} {
+ upvar $str_name str
+
+ if {[regexp "^!$this(lexic,spaces)*(.*)" $str reco str]} {
+   if {[this COND_BASE str $node]} {return 0} else {return 1}
+  } else {return [this COND_BASE str $node]}
+}
+
+#___________________________________________________________________________________________________________________________________________
+# COND_BASE : '(' COND_NODE ')' | accessor OP val
+# OP        : == | != | ~=
+method DSL_GDD_QUERY COND_BASE {str_name node} {
+ upvar $str_name str
+
+ if {[string equal $str {}]} {return 1}
+ if {[regexp "^\\((.*)$" $str reco str]} {
+   set str_inside [Compensate str ( ) 1]
+   set str [regexp "^$this(lexic,spaces)*(.*)$" $str reco str]
+   return [this COND_NODE str_inside $node]
+  }
+ if {[regexp "^($this(lexic,letters)*)$this(lexic,spaces)*($this(lexic,op_cmp)*)$this(lexic,spaces)*($this(lexic,letters)*)$this(lexic,spaces)*(.*)$" $str reco acc op val str]} {
+   if {[catch "set rep \[$node get_$acc\]" res]} {append this(ERROR) "\n" "Invalid accessor ($acc) for NODE or REL ($node).\n  acc : $acc\n   op : $op\n  val : $val\n$res"; return 0}
+   switch $op {
+     ==  {return [string equal $rep $val]}
+     !=  {return [expr ![string equal $rep $val]]}
+     ~=  {switch $acc {
+            type {if {[catch "set r \[$rep Is_a $val\]" res]} {
+                    append this(ERROR) "\n" "Invalid operation ~= between $rep and $acc. Maybe $acc is not a GDD type ($acc return $rep for NODE or REL $node) \n$res"
+                    return 0
+                   } else {return $r}
+                 }
+            default {return [expr [lsearch $rep $val]!=-1]
+                    }
+           }
+         }
+     !~= {switch $acc {
+            type {if {[catch "set r \[$rep Is_a $val\]" res]} {
+                    append this(ERROR) "\n" "Invalid operation !~= between $rep and $acc. Maybe $acc is not a GDD type ($acc return $rep for NODE or REL $node) \n$res"
+                    return 0
+                   } else {return [expr 1-$r]}
+                 }
+            default {return [expr [lsearch $rep $val]==-1]
+                    }
+           }
+         }
+    }
+
+   append this(ERROR) "\n" "Invalid condition:\n$str"
+   return 0
+  } else {return 0}
+}
+
+#___________________________________________________________________________________________________________________________________________
+#___________________________________________________________________________________________________________________________________________
+# RELATION    : REL_OR ARROW EXPR                                               #
+# REL_OR      : REL_SUCC | REL_SUCC '|' REL_OR                                  #
+# REL_SUCC    : SIMPLE_REL | SIMPLE_REL OP_SIMPLE_REL_SUCC REL_SUCC             #
+# OP_SIMPLE_REL_SUCC : '>' | '<'                                                #
+# SIMPLE_REL  : "Rel" '(' COND_REL ')' [*]                                      #
+#             | '(' RELATION ')'                                                #
+#___________________________________________________________________________________________________________________________________________
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY RELATION {str_name rel} {
+ upvar $str_name str
+
+#puts "RELATION\n  str : $str"
+ set L_rels [this REL_OR str $rel]
+ if {[string equal $L_rels {}]} {
+     if {[regexp "^$this(lexic,left_arrow)$this(lexic,spaces)*(.*)" $str reco str]} {
+       this EXPR str $this(node_bidon)
+      } else {if {[regexp "^$this(lexic,right_arrow)$this(lexic,spaces)*(.*)" $str reco str]} {this EXPR str $this(node_bidon)}
+             }
+   return {}
+  }
+
+ set L_rep {}
+ set str_tmp $str
+ if {[regexp "^$this(lexic,left_arrow)$this(lexic,spaces)*(.*)$" $str reco str]} {
+   set this(cmd_get_nodes) get_L_source_nodes; set this(cmd_get_rels) get_L_dest_rel
+   foreach r $L_rels {
+     foreach n [$r get_L_source_nodes] {
+       set str_tmp $str
+       Add_list L_rep [this EXPR str_tmp $n]
+       set this(cmd_get_nodes) get_L_source_nodes; set this(cmd_get_rels) get_L_dest_rel
+      }
+    }
+   # Just to parse correctly...
+   this EXPR str $this(node_bidon)
+  } else {if {[regexp "^$this(lexic,right_arrow)$this(lexic,spaces)*(.*)$" $str reco str]} {
+            set this(cmd_get_nodes) get_L_dest_nodes; set this(cmd_get_rels) get_L_source_rel
+            foreach r $L_rels {
+            foreach n [$r get_L_dest_nodes] {
+              set str_tmp $str
+              Add_list L_rep [this EXPR str_tmp $n]
+                set this(cmd_get_nodes) get_L_dest_nodes; set this(cmd_get_rels) get_L_source_rel
+               }
+             }
+            # Just to parse correctly...
+            this EXPR str $this(node_bidon)
+           } else {append this(ERROR) "\n" "Invalid relation operator, should be <- or -> but found:\n$str\n  rel : $rel"
+                   return {}
+                  }
+         }
+
+ return $L_rep
+}
+
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY REL_OR {str_name rel} {
+ upvar $str_name str
+
+#puts "REL_OR\n  str : $str"
+ set L_rels [this REL_SUCC str $rel]
+ if {[regexp "^\\|$this(lexic,spaces)*(.*)$" $str reco str]} {
+   Add_list L_rels [this REL_OR str $rel]
+  }
+
+ return $L_rels
+}
+
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY REL_SUCC {str_name rel} {
+ upvar $str_name str
+
+#puts "REL_SUCC\n  str : $str"
+ set this(propagate_node) 0
+ set L_rels [this REL_SIMPLE str $rel]
+
+#puts "REL_SUCC\n  str2: $str"
+ if {[string equal $L_rels {}]} {
+     if {[string equal -length 2 $str <-]} {return {}} else {
+       #puts "REL_SUCC\n  INFO : On parse $str"
+       if {[regexp "^\[<>\]$this(lexic,spaces)*(.*)$" $str reco str]} {
+         if {$this(propagate_node) == 1} {
+           Add_list L_rels [this REL_SUCC str $rel]
+           return $L_rels
+          } else {this REL_SUCC str $this(rel_bidon)}
+        }
+      }
+   #puts "REL_SUCC : 1 : $str\n         rel : $rel"
+#   return {}
+  }
+# Take care of the <- because it is ambiguitous with < relation operator !
+ if {[string equal -length 2 $str <-]} {return $L_rels}
+ if {[regexp "^(\[<>\])$this(lexic,spaces)*(.*)$" $str reco arrow str]} {
+   set L_rep {}
+   set str_tmp $str
+   switch $arrow {
+     < {set this(cmd_get_nodes) get_L_source_nodes; set this(cmd_get_rels) get_L_dest_rel
+        foreach rs $L_rels {
+          foreach n [$rs get_L_source_nodes] {
+            foreach r [$n get_L_dest_rel] {
+              set str_tmp $str
+              Add_list L_rep [this REL_SUCC str_tmp $r]
+              set this(cmd_get_nodes) get_L_source_nodes; set this(cmd_get_rels) get_L_dest_rel
+             }
+           }
+         }
+       }
+     > {set this(cmd_get_nodes) get_L_dest_nodes; set this(cmd_get_rels) get_L_source_rel
+        foreach rs $L_rels {
+          foreach n [$rs get_L_dest_nodes] {
+            foreach r [$n get_L_source_rel] {
+              set str_tmp $str
+              Add_list L_rep [this REL_SUCC str_tmp $r]
+              set this(cmd_get_nodes) get_L_dest_nodes; set this(cmd_get_rels) get_L_source_rel
+             }
+           }
+         }
+       }
+     default {append this(ERROR) "\n" "Invalid relation operator, should be < or > but found:\n$str"
+              return {}
+             }
+    }
+  # Just to parse correctly...
+   #puts "Après un $arrow sur $rel on passe de \n$str"
+     if {$this(propagate_node) == 1} {
+       puts "2 : Prise en compte de l'*"
+       Add_list L_rep [this REL_SUCC str $rel]
+       puts "2 : FIN Prise en compte de l'*"
+       if {[string equal $this(ERROR) {}]} {} else {puts "  ERROR : $this(ERROR)\n  str   : $str"}
+      } else {this REL_SUCC str $this(rel_bidon)}
+   #puts "à\n$str"
+   #puts "REL_SUCC : 2 : $str"
+   return $L_rep
+  } else {#puts "REL_SUCC : 3 : $str"
+          return $L_rels}
+
+ #puts "REL_SUCC : 4 : $str"
+}
+
+# SIMPLE_REL  : "Rel" '(' COND_REL ')' [*]                                      #
+#             | '(' RELATION ')'                                                #
+#___________________________________________________________________________________________________________________________________________
+method DSL_GDD_QUERY REL_SIMPLE {str_name rel} {
+ upvar $str_name str
+
+ #puts "REL_SIMPLE:\n  str : $str\n  rel : $rel"
+ set L_rep {}
+ if {[regexp "^REL$this(lexic,spaces)*\\((.*)$" $str reco str]} {
+   set in [Compensate str ( ) 1]
+   if {[string equal $rel $this(rel_bidon)]} {} else {
+     set param "REL($in)"
+     set cmd REL_SIMPLE
+     if {[this COND_NODE in $rel]} {set L_rep $rel}
+    }
+  } else {if {[regexp "^\\((.*)$" $str reco ]} {
+            set in [Compensate str ( ) 1]
+            if {[string equal $rel $this(rel_bidon)]} {} else {
+              set param "($in)"
+              set cmd RELATION
+              set L_rep [this RELATION in $rel]
+             }
+           } else {append this(ERROR) "\n" "Wanted a relation or an expression inside parenthesis but found:\n$str"
+                   return 0
+                  }
+         }
+
+ if {[regexp "^$this(lexic,spaces)*\\*$this(lexic,spaces)*(.*)$" $str reco str]} {
+   set this(propagate_node) 1
+   if {[string equal $L_rep {}]} {} else {
+     set L $L_rep
+     foreach rs $L {
+       foreach n [$rs $this(cmd_get_nodes)] {
+         foreach r [$n $this(cmd_get_rels)] {
+           set p $param; append p *
+           Add_list L_rep [this $cmd p $r]
+          }
+        }
+      }
+    }
+  }
+
+ #puts "  str : $str"
+ return $L_rep
+}
+

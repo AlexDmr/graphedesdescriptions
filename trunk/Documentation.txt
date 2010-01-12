@@ -1,0 +1,24 @@
+# Node_types
+Les noeuds sont décrits par rapport à l'ecosystème
+A classer : 
+ - HCI
+ - CCI : Component Component Interaction
+ 
+# Rel_Types
+ - "Héritage" 1-1
+   - Langage constants
+     - Spécialisation
+     - Extension
+     - ...
+   - Ajout de M dépendant de nouveaux langages
+     - Les modèles précédent ne sont pas modifiés
+       - ConcrétisationStable 
+         - ImplémentationStable
+     - Les modèles précédents sont modifiés
+       - ConcrétisationInstable
+   - Dérivation (les anciens MM sont modifiés)
+ - "Composition" 1-N
+   - Utilisation   (le composé reste visible)
+   - Incorporation (absorbtion, le composé n'est plus visible)
+     - Fusion/Phagocytage N-1 (les parties ne se distingue plus dans le tout)
+   - Aggrégation N-1 (les parties se distinguent dans le tout)
