@@ -1,0 +1,108 @@
+<GDD set_root_node="IS_root">
+<node id="IS_root" set_type="GDD_C&T" set_descriptions="Interactive System" set_ptf="*">
+</node>
+<node id="Choice" set_type="GDD_C&T" set_descriptions="Choice among a set" set_ptf="*">
+</node>
+<node id="ChoiceMonth" set_type="GDD_C&T" set_descriptions="Choice of months" set_ptf="*">
+</node>
+<node id="TorusMonthChooserTK" set_type="GDD_FUI" set_descriptions="TK torus month chooser" set_ptf="Ptf_TK">
+<factory id="PM_P_YearCircle_TK"></factory>
+</node>
+<node id="SimpleChoice" set_type="GDD_C&T" set_descriptions="Simple choice" set_ptf="*">
+</node>
+<relation id="SimpleChoice_to_FUI" set_L_source_nodes="TorusMonthChooserTK" set_L_dest_nodes="SimpleChoice" set_type="GDD_implementation"></relation>
+<relation id="ChoiceMonth_to_FUI" set_L_source_nodes="TorusMonthChooserTK" set_L_dest_nodes="ChoiceMonth" set_type="GDD_implementation"></relation>
+<relation id="Choice_Restriction" set_L_source_nodes="ChoiceMonth SimpleChoice" set_L_dest_nodes="Choice" set_type="GDD_restriction"></relation>
+<node id="ChoiceAccumulator" set_type="GDD_C&T" set_descriptions="Accumulator choice" set_ptf="*">
+</node>
+<relation id="ChoiceAccumulator_Choosed" set_L_source_nodes="ChoiceAccumulator" set_L_dest_nodes="Choice" set_type="GDD_encapsulation"></relation>
+<relation id="ChoiceAccumulator_Unchoosed" set_L_source_nodes="ChoiceAccumulator" set_L_dest_nodes="Choice" set_type="GDD_encapsulation"></relation>
+<node id="ChoiceInterleavedMarkers" set_type="GDD_C&T" set_descriptions="Choice done by interleaved markers" set_ptf="*">
+</node>
+<node id="Marker" set_type="GDD_C&T" set_descriptions="Marker" set_ptf="*">
+</node>
+<relation id="ChoiceInterleavedMarkers_Markers" set_L_source_nodes="ChoiceInterleavedMarkers" set_L_dest_nodes="Marker" set_type="GDD_encapsulation"></relation>
+<node id="Interleaving" set_type="GDD_C&T" set_descriptions="Interleaving" set_ptf="*">
+</node>
+<node id="Interleaving_AUI" set_type="GDD_AUI" set_descriptions="Dialog model for interleaving" set_ptf="*">
+</node>
+<node id="Container_AUI" set_type="GDD_AUI" set_descriptions="Container AUI" set_ptf="*">
+</node>
+<node id="Container" set_type="GDD_C&T" set_descriptions="Container" set_ptf="*">
+</node>
+<relation id="Container_to_AUI" set_L_source_nodes="Container_AUI" set_L_dest_nodes="Container" set_type="GDD_concretization"></relation>
+<node id="Container_CUI_frame" set_type="GDD_CUI" set_descriptions="Container CUI frame" set_ptf="*">
+</node>
+<node id="Container_CUI_frame_TK" set_type="GDD_FUI" set_descriptions="Container CUI TK frame" set_ptf="Ptf_TK">
+<factory id="PhysicalContainer_TK_frame"></factory>
+</node>
+<node id="Container_CUI_frame_BIGre" set_type="GDD_FUI" set_descriptions="" set_ptf="*">
+</node>
+<relation id="Container_frame_CUI_to_FUI" set_L_source_nodes="Container_CUI_frame_TK Container_CUI_frame_BIGre" set_L_dest_nodes="Container_CUI_frame" set_type="GDD_implementation"></relation>
+<node id="Container_CUI_window" set_type="GDD_CUI" set_descriptions="Container CUI window" set_ptf="*">
+</node>
+<node id="Container_CUI_window_TK" set_type="GDD_FUI" set_descriptions="Container CUI TK window" set_ptf="Ptf_TK">
+<factory id="PhysicalContainer_TK_window"></factory>
+</node>
+<node id="Container_CUI_window_BIGre" set_type="GDD_FUI" set_descriptions="" set_ptf="*">
+</node>
+<relation id="Container_win_CUI_to_FUI" set_L_source_nodes="Container_CUI_window_TK Container_CUI_window_BIGre" set_L_dest_nodes="Container_CUI_window" set_type="GDD_implementation"></relation>
+<relation id="Container_AUI_to_CUI" set_L_source_nodes="Container_CUI_frame Container_CUI_window" set_L_dest_nodes="Container_AUI" set_type="GDD_concretization"></relation>
+<relation id="InterleavingAUI_ContainerAUI" set_L_source_nodes="Interleaving_AUI" set_L_dest_nodes="Container_AUI" set_type="GDD_encapsulation"></relation>
+<node id="Interleaving_AUI_NoNav" set_type="GDD_AUI" set_descriptions="Interleaving without navigation" set_ptf="*">
+</node>
+<node id="ScatteringInterleaving" set_type="GDD_CUI" set_descriptions="Scattering interleaving" set_ptf="*">
+</node>
+<node id="PieInterleaving" set_type="GDD_CUI" set_descriptions="Pie interleaving" set_ptf="*">
+</node>
+<node id="MatricialInterleaving" set_type="GDD_CUI" set_descriptions="Matricial interleaving" set_ptf="*">
+</node>
+<node id="LinearInterleaving" set_type="GDD_CUI" set_descriptions="Linear interleaving" set_ptf="*">
+</node>
+<relation id="NoNav_to_CUI" set_L_source_nodes="ScatteringInterleaving PieInterleaving MatricialInterleaving LinearInterleaving" set_L_dest_nodes="Interleaving_AUI_NoNav" set_type="GDD_concretization"></relation>
+<relation id="InterleavingAUI_to_NoNav" set_L_source_nodes="Interleaving_AUI_NoNav" set_L_dest_nodes="Interleaving_AUI" set_type="GDD_specialization"></relation>
+<node id="Interleaving_AUI_Nav" set_type="GDD_AUI" set_descriptions="Interleaving with navigation" set_ptf="*">
+</node>
+<node id="Interleaving_AUI_Sequence" set_type="GDD_AUI" set_descriptions="Interleaving shwing subspace in sequence" set_ptf="*">
+</node>
+<node id="ComboMenu" set_type="GDD_CUI" set_descriptions="Combo menu" set_ptf="*">
+</node>
+<node id="ScrollListInterleaving" set_type="GDD_CUI" set_descriptions="Scroll list ListBox" set_ptf="*">
+</node>
+<node id="ScrollableMonospaceInterleaving" set_type="GDD_CUI" set_descriptions="Scrollable monospace ListBox" set_ptf="*">
+</node>
+<node id="Interleaving_AUI_MonoSPace" set_type="GDD_AUI" set_descriptions="Interleaving showing one subspace at a time" set_ptf="*">
+</node>
+<relation id="NoNav_to_MonoSpace" set_L_source_nodes="Interleaving_AUI_MonoSPace" set_L_dest_nodes="Interleaving_AUI_Nav" set_type="GDD_specialization"></relation>
+<relation id="MonoSpace_to_CUI" set_L_source_nodes="ScrollableMonospaceInterleaving" set_L_dest_nodes="Interleaving_AUI_MonoSPace" set_type="GDD_concretization"></relation>
+<node id="Interleaving_AUI_Sequential" set_type="GDD_AUI" set_descriptions="Interleaving showing subspace sequentialy" set_ptf="*">
+</node>
+<relation id="NoNav_to_Sequential" set_L_source_nodes="Interleaving_AUI_Sequential" set_L_dest_nodes="Interleaving_AUI_Nav" set_type="GDD_specialization"></relation>
+<relation id="Sequential_to_CUI" set_L_source_nodes="ScrollListInterleaving ScrollableMonospaceInterleaving" set_L_dest_nodes="Interleaving_AUI_Sequential" set_type="GDD_concretization"></relation>
+<relation id="Sequence_to_CUI" set_L_source_nodes="ComboMenu ScrollListInterleaving" set_L_dest_nodes="Interleaving_AUI_Sequence" set_type="GDD_concretization"></relation>
+<relation id="NoNav_to_Sequence" set_L_source_nodes="Interleaving_AUI_Sequence" set_L_dest_nodes="Interleaving_AUI_Nav" set_type="GDD_specialization"></relation>
+<relation id="InterleavingAUI_to_Nav" set_L_source_nodes="Interleaving_AUI_Nav" set_L_dest_nodes="Interleaving_AUI" set_type="GDD_specialization"></relation>
+<relation id="Interleaving_to_AUI" set_L_source_nodes="Interleaving_AUI" set_L_dest_nodes="Interleaving" set_type="GDD_concretization"></relation>
+<relation id="ChoiceInterleavedMarkers_Interleaving" set_L_source_nodes="ChoiceInterleavedMarkers" set_L_dest_nodes="Interleaving" set_type="GDD_encapsulation"></relation>
+<node id="ScrollableListBox" set_type="GDD_CUI" set_descriptions="Scrollable ListBox" set_ptf="*">
+</node>
+<node id="ScrollableListBoxTK" set_type="GDD_FUI" set_descriptions="TK Scrollable ListBox" set_ptf="Ptf_TK">
+<factory id="PM_P_ScrollableListBox_TK"></factory>
+</node>
+<node id="ScrollableListBoxHTML" set_type="GDD_FUI" set_descriptions="HTML torus Scrollable ListBox" set_ptf="*">
+</node>
+<relation id="ScrollableList_to_FUI" set_L_source_nodes="ScrollableListBoxTK ScrollableListBoxHTML" set_L_dest_nodes="ScrollableListBox" set_type="GDD_implementation"></relation>
+<relation id="Choice_to_ScrollableListBox" set_L_source_nodes="ScrollableListBox" set_L_dest_nodes="ChoiceInterleavedMarkers" set_type="GDD_concretization"></relation>
+<node id="ChoiceInterleavingMarkersTK" set_type="GDD_FUI" set_descriptions="Tk interleavement of boolean markers, each of them associated with a choice" set_ptf="Ptf_TK">
+<factory id="PM_P_radiobutton_TK"></factory>
+</node>
+<relation id="ChoiceInterleavedMarkers_to_FUI" set_L_source_nodes="ChoiceInterleavingMarkersTK" set_L_dest_nodes="ChoiceInterleavedMarkers" set_type="GDD_implementation"></relation>
+<relation id="ChoiceSpecialization" set_L_source_nodes="ChoiceAccumulator ChoiceInterleavedMarkers" set_L_dest_nodes="Choice" set_type="GDD_specialization"></relation>
+<node id="ChoiceWithExtend" set_type="GDD_C&T" set_descriptions="Choice among an extendable set" set_ptf="*">
+</node>
+<node id="Specifyer" set_type="GDD_C&T" set_descriptions="Textual Specifyer" set_ptf="*">
+</node>
+<relation id="ChoiceWithExtendSpecifyer" set_L_source_nodes="ChoiceWithExtend" set_L_dest_nodes="Specifyer" set_type="GDD_encapsulation"></relation>
+<relation id="ChoiceExtension" set_L_source_nodes="ChoiceWithExtend" set_L_dest_nodes="Choice" set_type="GDD_extension"></relation>
+<relation id="IS_Restriction" set_L_source_nodes="Choice Marker Interleaving Container Specifyer" set_L_dest_nodes="IS_root" set_type="GDD_restriction"></relation>
+</GDD>
