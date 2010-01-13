@@ -31,5 +31,13 @@ method Canvas_graph_GDD Query_update {Q} {
  eval $rep
  
 # Bind some interaction
- $this(canvas) bind <>
+ $this(canvas) bind <Button-1>        "$objName Start_drag %x %y"
+ $this(canvas) bind <ButtonRelease-1> "$objName Stop_drag"
+}
+
+#___________________________________________________________________________________________________________________________________________
+method Canvas_graph_GDD Start_drag {x y} {
+ set this(prev_x) $x
+ set this(prev_y) $y
+ 
 }
