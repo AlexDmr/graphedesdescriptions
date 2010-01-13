@@ -1,0 +1,14 @@
+
+set cont_graph_GDD [CPool get_a_comet CometContainer]
+set visu_graph_GDD [CPool get_a_comet CometGDD_Edit_Q]
+
+$cont_graph_GDD Add_daughter_R $visu_graph_GDD
+
+
+
+set root cr
+
+$root Add_daughters_R $cont_graph_GDD
+[CSS++ $root "#${root}->PMs.PM_TK $cont_graph_GDD"] Substitute_by_PM_type Container_PM_P_TK_to_canvas
+
+$visu_graph_GDD Query "?n : Container : NODE()<-REL(type ~= GDD_inheritance)*<-\$n()"
