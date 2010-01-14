@@ -158,6 +158,10 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Zoom {x y factor} {
 }
 
 #___________________________________________________________________________________________________________________________________________
+method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_rel  {v} {set this(GDD_rel)  $v}
+method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_type {v} {set this(GDD_type) $v}
+
+#___________________________________________________________________________________________________________________________________________
 method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
  set top ._toplevel_${objName}_${obj}
  if {![winfo exists $top]} {
@@ -166,11 +170,30 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
    toplevel $top; 
    set b $top.destroy
    button $b -text "Destroy component" -command "puts BOUM!; destroy $top"
-     pack $b -side top
-   set pos 0
+     pack $b -side top -fill x
+   
+   set f_add_node ${top}.f_add_node
+   frame $f_add_node
+     pack $f_add_node -side top -expand 0 -fill x
+	 label ${f_add_node}.lab -text "Add a node to $obj"; pack ${f_add_node}.lab -side top
+	 set f_rel ${f_add_node}.f_rel; frame $f_rel; pack $f_rel -side top -fill x
+	     label $f_rel.lab -text "Relation type : "; pack $f_rel.lab -side left
+		 set menu_rel ${f_rel}.menu_rel
+		   tk_optionMenu $menu_rel ${objName}_choice_rel GDD_concretization
+		   pack $menu_rel -side left -fill x
+		   foreach T_rel [list GDD_composition GDD_concretization GDD_encapsulation GDD_extension GDD_implementation GDD_inheritance GDD_restriction GDD_specialization GDD_use] {
+			 $menu_rel.menu add radiobutton -label $T_rel -command [list $objName set_GDD_rel $T_rel]
+			}
+	 
+	 set f_type ${f_add_node}.f_type; frame $f_type; pack $f_type -side top -fill x
+	     label $f_type.lab -text "Relation type : "; pack $f_type.lab -side left
+		 set menu_type ${f_type}.menu_type
+		   tk_optionMenu $menu_type ${objName}_choice_rel GDD_C&T
+		   pack $menu_type -side left -fill x
+		   foreach T_type [list GDD_C&T GDD_AUI GDD_CUI GDD_FUI] {
+			 $menu_type.menu add radiobutton -label $T_type -command [list $objName set_GDD_type $T_type]
+			}
 
-   
-   
    set    cmd "lassign \[split \[wm geometry $top\] +\] dim tmp tmp; lassign \[split \$dim x\] tx ty; "
    append cmd "wm geometry $top \$dim+\[expr $x - \$tx / 2\]+$y"
    after 10 $cmd
