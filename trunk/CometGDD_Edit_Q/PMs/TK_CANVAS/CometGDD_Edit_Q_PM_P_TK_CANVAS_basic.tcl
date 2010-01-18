@@ -8,6 +8,8 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic constructor {name descr args} {
  this inherited $name $descr
 
    this set_GDD_id GDD_CometCompo_evolution_PM_P_TK_canvas_basic
+   set this(GDD_rel)  ""
+   set this(GDD_type) ""
 
  eval "$objName configure $args"
  return $objName
@@ -19,6 +21,9 @@ Methodes_get_LC CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [P_L_methodes_get_CometGDD_
 
 #___________________________________________________________________________________________________________________________________________
 Generate_PM_setters CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [P_L_methodes_set_CometGDD_Edit_Q_COMET_RE_LP]
+
+#___________________________________________________________________________________________________________________________________________
+Generate_accessors CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [list GDD_rel GDD_type]
 
 #___________________________________________________________________________________________________________________________________________
 #___________________________________________________________________________________________________________________________________________
@@ -110,7 +115,6 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic trigger {W X Y D} {
         if {$D > 0} {
 		  set D [expr $D / 100.0]
 		 } else {set D [expr 100.0 / (-$D)]}
-		puts "  D = $D"
 		set this(delta) $D
 	event generate $w <<Wheel>> -rootx $X -rooty $Y -x $x -y $y
     }
@@ -158,8 +162,8 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Zoom {x y factor} {
 }
 
 #___________________________________________________________________________________________________________________________________________
-method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_rel  {v} {set this(GDD_rel)  $v}
-method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_type {v} {set this(GDD_type) $v}
+Inject_code CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_rel  {} {global ${objName}_choice_rel ; set ${objName}_choice_rel  $v}
+Inject_code CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_type {} {global ${objName}_choice_type; set ${objName}_choice_type $v}
 
 #___________________________________________________________________________________________________________________________________________
 method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
@@ -176,28 +180,74 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
    frame $f_add_node
      pack $f_add_node -side top -expand 0 -fill x
 	 label ${f_add_node}.lab -text "Add a node to $obj"; pack ${f_add_node}.lab -side top
+	 set f_name ${f_add_node}.f_name; frame $f_name; pack $f_name -side top -fill x
+		 label $f_name.lab -text "Name : "; pack $f_name.lab -side left
+		 entry $f_name.ent -textvariable ${objName}_text_var_name; pack $f_name.ent -side right
 	 set f_rel ${f_add_node}.f_rel; frame $f_rel; pack $f_rel -side top -fill x
 	     label $f_rel.lab -text "Relation type : "; pack $f_rel.lab -side left
 		 set menu_rel ${f_rel}.menu_rel
 		   tk_optionMenu $menu_rel ${objName}_choice_rel GDD_concretization
+		   $menu_rel.menu delete 0 last
 		   pack $menu_rel -side left -fill x
 		   foreach T_rel [list GDD_composition GDD_concretization GDD_encapsulation GDD_extension GDD_implementation GDD_inheritance GDD_restriction GDD_specialization GDD_use] {
 			 $menu_rel.menu add radiobutton -label $T_rel -command [list $objName set_GDD_rel $T_rel]
 			}
 	 
 	 set f_type ${f_add_node}.f_type; frame $f_type; pack $f_type -side top -fill x
-	     label $f_type.lab -text "Relation type : "; pack $f_type.lab -side left
+	     label $f_type.lab -text "Node type : "; pack $f_type.lab -side left
 		 set menu_type ${f_type}.menu_type
-		   tk_optionMenu $menu_type ${objName}_choice_rel GDD_C&T
+		   tk_optionMenu $menu_type ${objName}_choice_type GDD_C&T
+		   $menu_type.menu delete 0 last
 		   pack $menu_type -side left -fill x
 		   foreach T_type [list GDD_C&T GDD_AUI GDD_CUI GDD_FUI] {
 			 $menu_type.menu add radiobutton -label $T_type -command [list $objName set_GDD_type $T_type]
 			}
-
+	 button ${f_add_node}.bt -text ADD -command [list $objName Add_a_node $obj]; pack ${f_add_node}.bt -side right
+	 
    set    cmd "lassign \[split \[wm geometry $top\] +\] dim tmp tmp; lassign \[split \$dim x\] tx ty; "
    append cmd "wm geometry $top \$dim+\[expr $x - \$tx / 2\]+$y"
    after 10 $cmd
   }
 }
+
+
+#___________________________________________________________________________________________________________________________________________
+method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Add_a_node {obj} {
+ global ${objName}_text_var_name
+ global ${objName}_choice_rel
+ global ${objName}_choice_type
+  
+ set name [set ${objName}_text_var_name]
+ set type [set ${objName}_choice_type]
+ set rel  [set ${objName}_choice_rel]
+ 
+ puts "$objName Add_a_node to $obj <$name ; $type ; $rel>"
+ 
+# Create the new node
+ GDD_Node $name
+ $name set_type $type
+
+# Do we still have a relationship of the right type?
+ set dest_rel ""
+ foreach R [$obj get_L_dest_rel] {
+   #puts "$R : [$R get_type] == $rel"
+   if {[$R get_type] == $rel} {set dest_rel $R}
+  }
+ if {$dest_rel == ""} {set dest_rel ${obj}_rel_${rel}_for_$name
+                       GDD_Relationship $dest_rel
+					   $dest_rel set_name $dest_rel; $dest_rel set_type $rel
+					   $dest_rel set_L_dest_nodes $obj
+					   $obj Add_L_dest_rel $dest_rel
+					  }
+
+ #puts "$dest_rel Add_L_source_nodes $name"
+ #puts "$name set_L_source_rel $dest_rel"
+ $dest_rel Add_L_source_nodes $name
+ $name set_L_source_rel $dest_rel
+ 
+# Ask to update the graph
+ this prim_Query [this get_last_query]
+}
+
 
 
