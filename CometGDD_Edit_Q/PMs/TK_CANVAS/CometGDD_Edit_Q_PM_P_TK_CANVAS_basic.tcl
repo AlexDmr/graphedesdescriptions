@@ -16,8 +16,8 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic constructor {name descr args} {
 }
 
 #___________________________________________________________________________________________________________________________________________
-Methodes_set_LC CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [P_L_methodes_set_CometGDD_Edit_Q] {} {}
-Methodes_get_LC CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [P_L_methodes_get_CometGDD_Edit_Q] {$this(FC)}
+Methodes_set_LC CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [P_L_methodes_set_CometGDD_Edit_Q]       {} {}
+Methodes_get_LC CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [P_L_methodes_get_CometGDD_Edit_Q_LM_LP] {$this(FC)}
 
 #___________________________________________________________________________________________________________________________________________
 Generate_PM_setters CometGDD_Edit_Q_PM_P_TK_CANVAS_basic [P_L_methodes_set_CometGDD_Edit_Q_COMET_RE_LP]
@@ -37,6 +37,8 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_LM {LM} {
  
  return [this inherited $LM]
 }
+
+Trace CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_LM
 
 #___________________________________________________________________________________________________________________________________________
 Inject_code CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_dot_descr {} {
@@ -182,7 +184,7 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
 	 label ${f_add_node}.lab -text "Add a node to $obj"; pack ${f_add_node}.lab -side top
 	 set f_name ${f_add_node}.f_name; frame $f_name; pack $f_name -side top -fill x
 		 label $f_name.lab -text "Name : "; pack $f_name.lab -side left
-		 entry $f_name.ent -textvariable ${objName}_text_var_name; pack $f_name.ent -side right
+		 entry $f_name.ent -textvariable ${objName}_text_var_name; pack $f_name.ent -side left -expand 1 -fill x
 	 set f_rel ${f_add_node}.f_rel; frame $f_rel; pack $f_rel -side top -fill x
 	     label $f_rel.lab -text "Relation type : "; pack $f_rel.lab -side left
 		 set menu_rel ${f_rel}.menu_rel
@@ -202,14 +204,39 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
 		   foreach T_type [list GDD_C&T GDD_AUI GDD_CUI GDD_FUI] {
 			 $menu_type.menu add radiobutton -label $T_type -command [list $objName set_GDD_type $T_type]
 			}
-	 button ${f_add_node}.bt -text ADD -command [list $objName Add_a_node $obj]; pack ${f_add_node}.bt -side right
+	 button ${f_add_node}.bt -text "ADD NEW NODE" -command [list $objName Add_a_node $obj]; pack ${f_add_node}.bt -side right
+
+   # Let's manage the node itself !
+   set f_factories ${top}.f_factories
+   frame $f_factories
+     pack $f_factories -side top -expand 0 -fill x
+	 label ${f_factories}.lab -text "Factories :"; pack ${f_factories}.lab -side top
+	 text  ${f_factories}.text -width 50 -height 4
+	   ${f_factories}.text insert 0.0 [join [$obj get_L_factories] "\n"]
+	   pack ${f_factories}.text -side top -fill both -expand 1
+	 frame ${f_factories}.f_ptf; pack ${f_factories}.f_ptf -side top -expand 1 -fill x 
+	   label ${f_factories}.f_ptf.lab -text "Plateform : "; pack ${f_factories}.f_ptf.lab -side left
+	   entry ${f_factories}.f_ptf.ent -textvariable ${objName}_text_var_ptf; pack ${f_factories}.f_ptf.ent -side left -fill x -expand 1
+	   global ${objName}_text_var_ptf
+	   set ${objName}_text_var_ptf [$obj get_ptf]
 	 
+	 button ${f_factories}.bt_update -text "UPDATE NODE" -command [list $objName Update_factories $obj $f_factories]
+	 pack ${f_factories}.bt_update -side right
+   
    set    cmd "lassign \[split \[wm geometry $top\] +\] dim tmp tmp; lassign \[split \$dim x\] tx ty; "
    append cmd "wm geometry $top \$dim+\[expr $x - \$tx / 2\]+$y"
    after 10 $cmd
   }
 }
 
+#___________________________________________________________________________________________________________________________________________
+method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Update_factories {obj f_factories} {
+ $obj set_L_factories [split [${f_factories}.text get 0.0 end] "\n"]
+ 
+ global ${objName}_text_var_ptf
+ set ptf  [set ${objName}_text_var_ptf]
+ $obj set_ptf $ptf
+}
 
 #___________________________________________________________________________________________________________________________________________
 method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Add_a_node {obj} {
