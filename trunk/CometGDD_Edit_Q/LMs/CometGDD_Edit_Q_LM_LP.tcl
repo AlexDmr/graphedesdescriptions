@@ -4,9 +4,11 @@ inherit CometGDD_Edit_Q_LM_LP Logical_presentation
 method CometGDD_Edit_Q_LM_LP constructor {name descr args} {
  this inherited $name $descr
 # Adding some physical presentations 
- this Add_PM_factories [Generate_factories_for_PM_type [list {CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Ptf_TK_to_CANVAS} \
+ this Add_PM_factories [Generate_factories_for_PM_type [list {CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Ptf_TK_CANVAS} \
                                                        ] $objName]
- 
+
+ Add_U_fine_tuned_factory_for_encaps $objName Ptf_TK Ptf_TK_CANVAS CometGDD_Edit_Q_PM_P_TK_CANVAS_basic {Container_FUI_bridge_TK_to_CANVAS_frame(,$obj())}
+													   
  this Init_proxy_graph_builder 127.0.0.1 10010
  
  eval "$objName configure $args"
@@ -15,14 +17,16 @@ method CometGDD_Edit_Q_LM_LP constructor {name descr args} {
 
 #___________________________________________________________________________________________________________________________________________
 Methodes_set_LC CometGDD_Edit_Q_LM_LP [P_L_methodes_set_CometGDD_Edit_Q] {} {$this(L_actives_PM)}
-Methodes_get_LC CometGDD_Edit_Q_LM_LP [P_L_methodes_get_CometGDD_Edit_Q] {$this(FC)}
+proc P_L_methodes_get_CometGDD_Edit_Q_LM_LP {} {return [concat [P_L_methodes_get_CometGDD_Edit_Q] [list {get_proxy_graph_builder {}}]]}
+Methodes_get_LC CometGDD_Edit_Q_LM_LP [P_L_methodes_get_CometGDD_Edit_Q_LM_LP] {$this(FC)}
 
 #___________________________________________________________________________________________________________________________________________
-proc P_L_methodes_set_CometGDD_Edit_Q_COMET_RE_LP {} {return [P_L_methodes_set_CometGDD_Edit_Q]}
-Generate_LM_setters CometGDD_Edit_Q_LM_LP [P_L_methodes_set_CometGDD_Edit_Q_COMET_RE_LP]
-
-#___________________________________________________________________________________________________________________________________________
+# Nécessary to rewrite the methode "get_proxy_graph_builder"
 Generate_accessors CometGDD_Edit_Q_LM_LP [list proxy_graph_builder]
+
+#___________________________________________________________________________________________________________________________________________
+proc P_L_methodes_set_CometGDD_Edit_Q_COMET_RE_LP {} {return [concat [P_L_methodes_set_CometGDD_Edit_Q] ]}
+Generate_LM_setters CometGDD_Edit_Q_LM_LP [P_L_methodes_set_CometGDD_Edit_Q_COMET_RE_LP]
 
 #___________________________________________________________________________________________________________________________________________
 method CometGDD_Edit_Q_LM_LP Init_proxy_graph_builder {IP port} {
