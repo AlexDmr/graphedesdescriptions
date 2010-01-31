@@ -25,3 +25,5 @@ method CometGDD_Edit_Q dispose {} {this inherited}
 Methodes_set_LC CometGDD_Edit_Q [P_L_methodes_set_CometGDD_Edit_Q] {$this(FC)} {$this(L_LM)}
 Methodes_get_LC CometGDD_Edit_Q [P_L_methodes_get_CometGDD_Edit_Q] {$this(FC)}
 
+#___________________________________________________________________________________________________________________________________________
+Manage_CallbackList CometGDD_Edit_Q [list set_L_selected_nodes Add_L_selected_nodes Sub_L_selected_nodes] end
