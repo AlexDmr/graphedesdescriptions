@@ -266,7 +266,7 @@ method GraphComet Comets_to_graph {root c level {do_nesting 0}} {
 
 #_________________________________________________________________________________________________________
 method GraphComet Comets_to_viz {str_name r level do_nesting do_daughters {dec {}}} {
- if {[$r Contains_L_marks $this(mark)]!=-1} {return}
+ if {[$r Contains_L_marks $this(mark)]} {return}
  $r set_L_marks $this(mark)
 
  upvar $str_name str

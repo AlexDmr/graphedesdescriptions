@@ -101,7 +101,7 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Update_interaction {} {
  
 # Bindings for zoom
  set this(zoom_factor) 1
- bind [winfo toplevel $canvas] <MouseWheel> "$objName trigger %W %X %Y %D"
+ bind [winfo toplevel $canvas] <MouseWheel> "+ $objName trigger %W %X %Y %D"
  bind $canvas <<Wheel>> "$objName Zoom %x %y \[$objName get_delta\]"
 }
 
@@ -111,8 +111,9 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic get_delta {} {return $this(delta)}
 #___________________________________________________________________________________________________________________________________________
 method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic trigger {W X Y D} {
     set w [winfo containing -displayof $W $X $Y]
-    if { $w ne "" } {
-        set x [expr {$X-[winfo rootx $w]}]
+    if { $w == [this get_canvas] } {
+        #puts "CometGDD_Edit_Q_PM_P_TK_CANVAS_basic : w = $w"
+		set x [expr {$X-[winfo rootx $w]}]
         set y [expr {$Y-[winfo rooty $w]}]
         if {$D > 0} {
 		  set D [expr $D / 100.0]
@@ -125,22 +126,26 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic trigger {W X Y D} {
 #___________________________________________________________________________________________________________________________________________
 method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Button_press {b x y} {
  set C_canvas [this get_root_for_daughters]
+ 
  switch $b {
    1 {$C_canvas set_current_element $objName $x $y}
-   default {set canvas   [this get_canvas]
-      set item [lindex [$canvas find overlapping $x $y $x $y] end]
-	  if {$item != ""} {
-	    set L_tags [$canvas gettags $item]
-		set obj    [lindex $L_tags 0]
-	    puts "  Right press on item $item tagged "
-	    if {[gmlObject info exists object $obj]} {
-		  if {[lindex [gmlObject info classes $obj] 0] == "GDD_Node"} {
-		    this Display_drop_down_menu $obj $x $y
-		   }
+  }
+  
+ set canvas   [this get_canvas]
+ set item [lindex [$canvas find overlapping $x $y $x $y] end]
+ if {$item != ""} {
+   set L_tags [$canvas gettags $item]
+   set obj    [lindex $L_tags 0]
+   if {[gmlObject info exists object $obj]} {
+	  if {[lindex [gmlObject info classes $obj] 0] == "GDD_Node"} {
+		switch $b {
+		        1 {this prim_set_L_selected_nodes $obj}
+		  default {this Display_drop_down_menu $obj $x $y}
 		 }
 	   }
 	 }
-  }
+   }
+ 
 }
 
 #___________________________________________________________________________________________________________________________________________
