@@ -7,7 +7,7 @@ inherit GDD_editor_LM_LP Logical_presentation
 method GDD_editor_LM_LP constructor {name descr args} {
  set this(init_ok) 0
  this inherited $name $descr
- this set_L_actives_PM {}
+ this set_L_actives_PM [list]
    set this(num_sub) 0
  
  if {[regexp "^(.*)_LM_LP" $objName rep comet_name]} {} else {set comet_name $objName}
@@ -46,8 +46,9 @@ set this(OK_CANCEL) "${objName}_nested_OK_CANCEL"
   set str   "#$this(Interleaving)->_LM_LP(*->_LM_LP \\>${objName}_Nav/)"
   puts $str
   set L_rep {}
-  Style_CSSpp DSL_SELECTOR str L_rep $this(Interleaving) 1
-    puts "L_rep : $L_rep"
+  #DEBUG UPDATE Style_CSSpp DSL_SELECTOR str L_rep $this(Interleaving) 1
+  set L_rep [CSS++ $this(Interleaving) $str]
+    #puts "L_rep : $L_rep"
     $L_rep Ptf_style [list {Ptf_TK PhysicalContainer_TK_window}]
 
 # Styling
