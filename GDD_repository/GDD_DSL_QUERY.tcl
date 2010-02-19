@@ -26,6 +26,8 @@ proc Afficher_hierarchy {L {dec {}}} {
 #___________________________________________________________________________________________________________________________________________
 #___________________________________________________________________________________________________________________________________________
 method DSL_GDD_QUERY constructor {} {
+ set this(dico_query) [dict create "" ""]
+
  set this(dec) ""
  set this(lexic,left_arrow)  {<-}
  set this(lexic,right_arrow) {->}
@@ -67,6 +69,12 @@ Generate_accessors DSL_GDD_QUERY ERROR
 #___________________________________________________________________________________________________________________________________________
 #___________________________________________________________________________________________________________________________________________
 method DSL_GDD_QUERY QUERY {str} {
+ if {[dict exists $this(dico_query) $str]} {
+   set this(L_vars) [dict get $this(dico_query) $str]
+   return 1
+  }
+
+
  set this(ERROR)  {}
  set this(L_vars) {}
  set this(L_var_names) {}
@@ -82,7 +90,8 @@ method DSL_GDD_QUERY QUERY {str} {
    if {[llength [lindex $this(L_vars) 2]]==0} {set this(L_vars) [list $this(L_vars)]}
   }
 # puts "Rest:\n$str"
- if {[string equal $this(ERROR) {}]} {
+ if {$this(ERROR) == ""} {
+   dict set this(dico_query) $str [this get_Result]
    return 1
   } else {return 0}
 }
