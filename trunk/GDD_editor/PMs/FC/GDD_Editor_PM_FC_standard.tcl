@@ -85,13 +85,17 @@ method GDD_Editor_PM_FC_standard attribut {node L_args L_daughters} {
  set id {}
  #puts "L_args = \{$L_args\}"
  set t [llength $L_args]
- for {set p 0} {$p<$t} {incr p 2} {
-   if {[string equal [lindex $L_args $p] id]} {incr p; set id [lindex $L_args $p]; break}
-  }
+ foreach {var val} $L_args {
+	set $var $val
+ }
+ # for {set p 0} {$p<$t} {incr p 2} {
+   # if {[string equal [lindex $L_args $p] id]} {incr p; set id [lindex $L_args $p]; break}
+   # if {[string equal [lindex $L_args $p] name]} {incr p; set name [lindex $L_args $p]; break}
+  # }
 
- if {[string equal $id {}]} {return}
+ if {$id == ""} {return}
  #puts "$node Add_L_factories $id"
- $node Add_L_attributs $id
+ $node Add_L_attributs [list [list $id $name]]	
 }
 
 
@@ -199,8 +203,8 @@ method GDD_Editor_PM_FC_standard Save_factory {f strm} {
  puts $strm "<factory id=\"$f\"></factory>"
 }
 method GDD_Editor_PM_FC_standard Save_attributs {a strm} {
-	if {$a != ""} {
-		puts $strm "<attribut id=\"$a\"></attribut>"
+	if {$a != ""} {		
+		puts $strm "<attribut id=\"[lindex $a 0]\" name=\"[lindex $a 1]\"></attribut>"
 	}
 }
 #________________________________________________________________________________________________________________________________________
