@@ -231,13 +231,33 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
 	   global ${objName}_text_var_ptf
 	   set ${objName}_text_var_ptf [$obj get_ptf]
 	 
-	 button ${f_factories}.bt_update -text "UPDATE NODE" -command [list $objName Update_factories $obj $f_factories]
+	 	#ajout d'attribut
+	set f_add_attribut ${f_factories}.f_add_attribut
+	frame $f_add_attribut
+	pack $f_add_attribut  -side top -expand 0 -fill x
+	label ${f_add_attribut}.lab -text "Attributs :" ; 
+	pack ${f_add_attribut}.lab -side top
+	text  ${f_add_attribut}.text -width 50 -height 4
+	${f_add_attribut}.text insert 0.0 [join [$obj get_L_attributs] "\n"]
+	pack ${f_add_attribut}.text -side top -fill both -expand 1
+   #comment je le link!
+	   
+	 button ${f_factories}.bt_update -text "UPDATE NODE" -command [list $objName Update_obj $obj $f_factories $f_add_attribut]
 	 pack ${f_factories}.bt_update -side right
+	 
+
    
+	 
    set    cmd "lassign \[split \[wm geometry $top\] +\] dim tmp tmp; lassign \[split \$dim x\] tx ty; "
    append cmd "wm geometry $top \$dim+\[expr $x - \$tx / 2\]+$y"
    after 10 $cmd
   }
+}
+
+#___________________________________________________________________________________________________________________________________________
+method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Update_obj {obj f_factories f_add_attribut} {
+	this Update_factories $obj $f_factories
+	this Update_attributs $obj $f_add_attribut
 }
 
 #___________________________________________________________________________________________________________________________________________
@@ -247,6 +267,11 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Update_factories {obj f_factories} {
  global ${objName}_text_var_ptf
  set ptf  [set ${objName}_text_var_ptf]
  $obj set_ptf $ptf
+}
+
+#___________________________________________________________________________________________________________________________________________
+method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Update_attributs {obj f_add_attribut} {
+	$obj set_L_attributs [split [${f_add_attribut}.text get 0.0 end] "\n"]
 }
 
 #___________________________________________________________________________________________________________________________________________

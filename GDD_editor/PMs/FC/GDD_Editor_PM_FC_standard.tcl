@@ -81,6 +81,21 @@ method GDD_Editor_PM_FC_standard factory {node L_args L_daughters} {
  $node Add_L_factories $id
 }
 
+method GDD_Editor_PM_FC_standard attribut {node L_args L_daughters} {
+ set id {}
+ #puts "L_args = \{$L_args\}"
+ set t [llength $L_args]
+ for {set p 0} {$p<$t} {incr p 2} {
+   if {[string equal [lindex $L_args $p] id]} {incr p; set id [lindex $L_args $p]; break}
+  }
+
+ if {[string equal $id {}]} {return}
+ #puts "$node Add_L_factories $id"
+ $node Add_L_attributs $id
+}
+
+
+
 #________________________________________________________________________________________________________________________________________
 method GDD_Editor_PM_FC_standard to_XML {L} {
  puts "$objName to_XML {$L}"
@@ -152,7 +167,10 @@ method GDD_Editor_PM_FC_standard Add_element_dom {e_dom} {
 
 #________________________________________________________________________________________________________________________________________
 method GDD_Editor_PM_FC_standard Load_GDD {f_name} {
+ #puts "replace $f_name with gdd_dimitri.xml"
+ #set f_name "gdd_dimitri.xml"
  puts "GDD_Editor_PM_FC_standard Load_GDD $f_name"
+ 
  set f [open $f_name]
    dom parse [read $f] doc
    $doc documentElement root
@@ -180,7 +198,11 @@ method GDD_Editor_PM_FC_standard Load_GDD {f_name} {
 method GDD_Editor_PM_FC_standard Save_factory {f strm} {
  puts $strm "<factory id=\"$f\"></factory>"
 }
-
+method GDD_Editor_PM_FC_standard Save_attributs {a strm} {
+	if {$a != ""} {
+		puts $strm "<attribut id=\"$a\"></attribut>"
+	}
+}
 #________________________________________________________________________________________________________________________________________
 method GDD_Editor_PM_FC_standard Save_node {n m strm} {
  if {[$n Has_for_marks $m]} {return}
@@ -193,7 +215,16 @@ method GDD_Editor_PM_FC_standard Save_node {n m strm} {
        this Save_factory $f $strm
       }
     }
-  # MetaDatas
+#sauvetgarde des attributs 
+   set L_a [$n get_L_attributs]
+   if {[string equal $L_a {}]} {} else {
+     puts "\n"
+     foreach a $L_a {
+       this Save_attributs $a $strm
+      }
+    }
+
+	# MetaDatas
    foreach d [$n get_MetaData] {
 	 puts $strm "<MetaData id=\"[lindex $d 0]\"><!\[CDATA\[[lindex $d 1]\]\]></MetaData>"
     }
@@ -218,6 +249,7 @@ method GDD_Editor_PM_FC_standard Save_rel {r m strm} {
 
 #________________________________________________________________________________________________________________________________________
 method GDD_Editor_PM_FC_standard Save_GDD {f_name} {
+puts "saving GDD in $f_name"
  set f [open $f_name w+]
    puts $f {<GDD set_root_node="IS_root">}
    this Save_node IS_root [clock seconds] $f

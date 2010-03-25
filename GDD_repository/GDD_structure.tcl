@@ -109,6 +109,7 @@ method GDD_Node constructor {} {
    set this(L_dest_rel)   {}
    set this(L_factories)  {}
    set this(ptf)          *
+   set this(L_attributs)  {}
  return $objName
 }
 
@@ -133,6 +134,7 @@ Generate_accessors     GDD_Node [list factory_req ptf]
 Generate_List_accessor GDD_Node L_source_rel L_source_rel
 Generate_List_accessor GDD_Node L_dest_rel   L_dest_rel
 Generate_List_accessor GDD_Node L_factories  L_factories
+Generate_List_accessor GDD_Node L_attributs  L_attributs
 
 #_________________________________________________________________________________________________________
 method GDD_Node get_source_rels_typed {t} {return [this get_rels_typed $t [this get_L_source_rel]]}
