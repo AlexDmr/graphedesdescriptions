@@ -92,21 +92,21 @@ method CometGDD_Edit_Q_PM_FC_basic Build_sub_graph {str_name} {
 }
 
 #_________________________________________________________________________________________________________
-method CometGDD_Edit_Q_PM_FC_basic Build_sub_graph {str_name} {
- upvar $str_name str
+# method CometGDD_Edit_Q_PM_FC_basic Build_sub_graph {str_name} {
+ # upvar $str_name str
  
- foreach N $this(L_nodes_to_relate) {
-   append str "  " $N {[label = "} $N {",shape=box,style=filled,fillcolor="} [this get_color [$N get_type]] {"}
-   if {$this(js_fct) != ""} {append str "URL=\"$this(js_fct)(NODE, $N)\""}
-   append str {];} "\n"
-  }
+ # foreach N $this(L_nodes_to_relate) {
+   # append str "  " $N {[label = "} $N {",shape=box,style=filled,fillcolor="} [this get_color [$N get_type]] {"}
+   # if {$this(js_fct) != ""} {append str "URL=\"$this(js_fct)(NODE, $N)\""}
+   # append str {];} "\n"
+  # }
   
- foreach N $this(L_nodes_to_relate) {
+ # foreach N $this(L_nodes_to_relate) {
    # Parcourir les relations et l'écrire si la relation fait un lien avec un autre noeud de la liste
-   foreach R [$N get_L_source_rel] {
-     foreach N2 [$R get_L_dest_nodes] {
-	   if {[llength [Liste_Intersection [list $N2] $this(L_nodes_to_relate)]]} {append str "  $N -> $N2\;\n"}
-	  }
-    }
-  }
-}
+   # foreach R [$N get_L_source_rel] {
+     # foreach N2 [$R get_L_dest_nodes] {
+	   # if {[llength [Liste_Intersection [list $N2] $this(L_nodes_to_relate)]]} {append str "  $N -> $N2\;\n"}
+	  # }
+    # }
+  # }
+# }

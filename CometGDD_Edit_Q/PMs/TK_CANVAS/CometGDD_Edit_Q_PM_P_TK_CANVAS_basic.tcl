@@ -179,6 +179,16 @@ Inject_code CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_rel  {} {global ${objNa
 Inject_code CometGDD_Edit_Q_PM_P_TK_CANVAS_basic set_GDD_type {} {global ${objName}_choice_type; set ${objName}_choice_type $v}
 
 #___________________________________________________________________________________________________________________________________________
+method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Delete_node {gdd_node} {
+ foreach rel [concat [$gdd_node get_L_source_rel] [$gdd_node get_L_dest_rel]] {
+   $rel Sub_L_dest_nodes   $gdd_node
+   $rel Sub_L_source_nodes $gdd_node
+  }
+  
+ $gdd_node dispose
+}
+
+#___________________________________________________________________________________________________________________________________________
 method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
  set top ._toplevel_${objName}_${obj}
  if {![winfo exists $top]} {
@@ -186,7 +196,7 @@ method CometGDD_Edit_Q_PM_P_TK_CANVAS_basic Display_drop_down_menu {obj x y} {
 
    toplevel $top; 
    set b $top.destroy
-   button $b -text "Destroy component" -command "puts BOUM!; destroy $top"
+   button $b -text "Destroy component" -command "$objName Delete_node $obj; destroy $top"
      pack $b -side top -fill x
    
    set f_add_node ${top}.f_add_node
