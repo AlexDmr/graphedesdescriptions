@@ -114,7 +114,7 @@ method GDD_Node constructor {} {
 }
 
 #_________________________________________________________________________________________________________
-method GDD_Node destructor {} {
+method GDD_Node dispose {} {
  foreach r [this get_L_source_rel] {
    $r Sub_L_source_nodes $objName
    if {[llength [$r get_L_source_nodes]]==0} {$r dispose}
@@ -181,7 +181,7 @@ method GDD_Relationship constructor {} {
 }
 
 #_________________________________________________________________________________________________________
-method GDD_Relationship destructor {} {
+method GDD_Relationship dispose {} {
  foreach n [this get_L_source_nodes] {$n Sub_L_source_rel $objName}
  foreach n [this get_L_dest_nodes]   {$n Sub_L_dest_rel   $objName}
 
