@@ -13,7 +13,8 @@ method GDD_Editor_PM_FC_standard constructor {name descr args} {
    
    set this(DSL_GDD) ${objName}_DSL_GDD 
    DSL_GDD_QUERY $this(DSL_GDD)
-   socket -server "$objName QUERY" 8765
+   set this(sock_server) [socket -server "$objName QUERY" 0]
+   set this(server_port) [lindex [fconfigure $this(sock_server) -sockname] end]
 
  eval "$objName configure $args"
  return $objName
