@@ -2,7 +2,8 @@ set P [pwd]
   if {[info exists ::env(ROOT_COMETS)]} {cd $::env(ROOT_COMETS)/Comets/} else {puts "Please define an environment variable nammed ROOT_COMETS valuated with the Comets root path."; return}
  source gml_Object.tcl
 cd $P
-package require Tcldot
+
+if {[catch {package require Tcldot} err]} {put "TclDot is not installed, good luck to find it..."}
 
 
 #___________________________________________________________________________________________________________________________________________
