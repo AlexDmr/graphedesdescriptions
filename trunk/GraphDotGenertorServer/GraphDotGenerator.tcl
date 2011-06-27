@@ -3,7 +3,7 @@ set P [pwd]
  source gml_Object.tcl
 cd $P
 
-if {[catch {package require Tcldot} err]} {put "TclDot is not installed, good luck to find it..."}
+if {[catch {package require Tcldot} err]} {puts "TclDot is not installed, good luck to find it..."}
 
 
 #___________________________________________________________________________________________________________________________________________
