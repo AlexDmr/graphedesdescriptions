@@ -1,0 +1,1 @@
+Le graphe des descriptions capitalise les savoir-faires
